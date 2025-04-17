@@ -41,11 +41,11 @@ class QuantumFunction(Function):
             # angle encoding of previous linear layer's outputs
             for idx, qubit in enumerate(qubits):
                 ry(ry_angles[idx], qubit)
-                ry(rx_angles[idx], qubit)    
+                rx(rx_angles[idx], qubit)
 
             # entangle qubits before measuring control-x gate
-            for i in range(1, qubit_count): 
-                x.ctrl(qubits[0], qubits[i]) 
+            for i in range(1, len(qubits)):
+                x.ctrl(qubits[0], qubits[i])
 
         self.kernel = kernel
 
