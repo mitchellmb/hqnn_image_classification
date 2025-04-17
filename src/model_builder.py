@@ -17,15 +17,13 @@ from src.utils.model_utils.model_setup import (
 DATA_CONFIG = Config.get('data')
 TRAINING_CONFIG = Config.get('training_parameters')
 
-# TODO - originally beneath #4 below
+
 device = torch.device('cuda' if torch.cuda.is_available() and TRAINING_CONFIG.get('cuda_device') == 'gpu' else 'cpu')
 cudaq.set_target("qpp-cpu") 
 
 
-def build_and_run_nn(label_target: Literal['categories', 'binary'],
-                     conv_channels_1: int, conv_channels_2: int, 
-                     fc_neurons_1: int, fc_neurons_2: int, 
-                     qubit_count: int, quantum_layer_args: bool):
+def build_and_run_nn(label_target: Literal['categories', 'binary'], cnn_fc_layer_args: dict, 
+                     quantum_layer_args: dict, training_params: dict):
     '''
     Control function for building and running the Hybrid Quantum Neural Network.
 
@@ -56,24 +54,23 @@ def build_and_run_nn(label_target: Literal['categories', 'binary'],
     nn = HybridNN(
         n_classes=n_classes, 
         shape_after_pooling = shape_after_pooling, 
-        conv_channels_1 = conv_channels_1,
-        conv_channels_2 = conv_channels_2,
-        fc_neuron_ct_1 = fc_neurons_1,
-        fc_neuron_ct_2 = fc_neurons_2,
-        dropout = TRAINING_CONFIG.get('dropout'),
-        qubit_count=qubit_count,
+        conv_channels_1 = cnn_fc_layer_args.get('conv_channels_1'),
+        conv_channels_2 = cnn_fc_layer_args.get('conv_channels_2'),
+        fc_neuron_ct_1 = cnn_fc_layer_args.get('fc_neurons_1'),
+        fc_neuron_ct_2 = cnn_fc_layer_args.get('fc_neurons_2'),
+        dropout = cnn_fc_layer_args.get('dropout'),
         quantum_layer_args=quantum_layer_args)
     
     # 5 - run the NN 
     train_cost, train_accuracy, test_cost, test_accuracy, model_out = batch_train_model(
         x_train, x_test, y_train, y_test,
-        nn_model=nn.to(device), 
-        device=device,
-        learning_rate=TRAINING_CONFIG.get('learning_rate'),
-        regularization=TRAINING_CONFIG.get('l2_regularization'),
-        batch_size=TRAINING_CONFIG.get('batch_size'),
-        n_epochs=TRAINING_CONFIG.get('epochs'),
-        early_stopping_patience=TRAINING_CONFIG.get('early_stopping'))
+        nn_model = nn.to(device), 
+        device = device,
+        learning_rate = training_params.get('learning_rate_init'),
+        regularization = training_params.get('l2_regularization'),
+        batch_size = training_params.get('batch_size'),
+        n_epochs = training_params.get('epochs'),
+        early_stopping_patience = training_params.get('early_stopping'))
     
     # 6 - save the training outputs
     df = pd.DataFrame(np.transpose([train_cost, train_accuracy, test_cost, test_accuracy]),

@@ -24,7 +24,6 @@ class QuantumLayer(nn.Module):
     def forward(self, input_tensor):
         logits = QuantumFunction.apply(input_tensor, self.quantum_circuit, self.shift)
         return logits
-
         
 
 class QuantumFunction(Function):
@@ -102,7 +101,7 @@ class QuantumFunction(Function):
         exp_plus = circuit.run(thetas_plus)
         exp_minus = circuit.run(thetas_minus)
 
-        # compute parameter shift gradient estimates
+        # compute gradients with the batched parameter shifts
         grads = (exp_plus - exp_minus) / (2 * shift)
         gradients = grads.view(batch_size, input_dim, num_logits)
 
