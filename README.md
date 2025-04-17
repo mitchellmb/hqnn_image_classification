@@ -10,6 +10,10 @@ Test whether incorporating a quantum layer into a simple convolutional neural ne
 - **2-3 fully connected layers** (classical)
 - **1 (optional) quantum layer**
 
+Within the quantum layer, the main function that allows for learning is the quantum kernel (QK). The QK is essentially a 'function' that can handle most of the basic Python logic (e.g., if/for/while/else/+/-/*) that acts upon qubits in a quantum circuit. The QK is created for some set of inputs (in this case, angle rotations of qubits) and then observed with a Hamiltonian to determine the expectation value for those inputs. 
+
+In this project, the QK is being simulated via a traditional CPU/GPU backend, but real quantum computers can be connected too (https://nvidia.github.io/cuda-quantum/latest/using/backends/hardware.html).  
+
 ## Project structure
 Only 2 functions from this project are needed to prepare data & run the CNN/HQNN:
 1) `download_and_prepare_dataset()`: Downloads, prepares, and augments the TensorFlow plant leaves dataset. Stored in `dataset_builder.py`.
@@ -30,6 +34,7 @@ Only 2 functions from this project are needed to prepare data & run the CNN/HQNN
 ## Technologies
 - [PyTorch](https://pytorch.org/) - Core neural network model setup.
 - [CUDA-Q](https://developer.nvidia.com/cuda-quantum) - Quantum layer implementation compatible with PyTorch.
-- [TensorFlow](https://www.tensorflow.org/datasets) - Source of plant leaf images.
+- [TensorFlow](https://www.tensorflow.org/datasets) - Source of plant leaf images. plant_leaves - 4500 healthy/unhealthy leaves, 22 species/health categories
+ImageCLEF 2013 plant task dataset.
 - Python 3.8+
 - GPU acceleration (CUDA-compatible)
