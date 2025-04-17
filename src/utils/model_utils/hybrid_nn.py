@@ -71,6 +71,8 @@ class HybridNN(nn.Module):
 
         if self.quantum:
             x = self.quantum(x)
+            x = self.fc_out(x*self.quantum_scale) # amplifies small quantum outputs
 
-        x = self.fc_out(x*100) 
+        else:
+            x = self.fc_out(x) 
         return x

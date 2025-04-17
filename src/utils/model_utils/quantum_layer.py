@@ -11,9 +11,6 @@ from src.config.config import Config
 DATA_CONFIG = Config.get('data')
 TRAINING_CONFIG = Config.get('training_parameters')
 
-# device = torch.device('cuda' if torch.cuda.is_available() and TRAINING_CONFIG.get('cuda_device') == 'gpu' else 'cpu')
-# cudaq.set_target("qpp-cpu") 
-
 
 class QuantumLayer(nn.Module):
     def __init__(self, qubit_count: int, quantum_layer_args: dict):
@@ -41,12 +38,14 @@ class QuantumFunction(Function):
         def kernel(ry_angles: np.ndarray, rx_angles: np.ndarray):
             qubits = cudaq.qvector(len(ry_angles))
 
+            # angle encoding of previous linear layer's outputs
             for idx, qubit in enumerate(qubits):
                 ry(ry_angles[idx], qubit)
                 ry(rx_angles[idx], qubit)    
 
-            # for i in range(1, qubit_count): # entangle qubits before measuring control-x gate
-            #     x.ctrl(qubits[0], qubits[i]) 
+            # entangle qubits before measuring control-x gate
+            for i in range(1, qubit_count): 
+                x.ctrl(qubits[0], qubits[i]) 
 
         self.kernel = kernel
 
@@ -86,12 +85,10 @@ class QuantumFunction(Function):
         batch_size, input_dim = input_tensor.shape
         _, num_logits = grad_output.shape
 
-        device_input = input_tensor.device
         shift = ctx.shift
         circuit = ctx.quantum_circuit
 
-        # Create expanded batch: for each input, we create one shifted + and one shifted -
-        # So total shape will be (batch_size * input_dim * 2, input_dim)
+        # batch process shift+ and shift- tensors to estimate the gradient
         plus_inputs = input_tensor.unsqueeze(1).repeat(1, input_dim, 1)
         minus_inputs = plus_inputs.clone()
 
@@ -99,28 +96,17 @@ class QuantumFunction(Function):
         plus_inputs[:, idx, idx] += shift
         minus_inputs[:, idx, idx] -= shift
 
-        # Reshape into 2D batch (2 * batch_size * input_dim, input_dim)
         thetas_plus = plus_inputs.reshape(-1, input_dim)
         thetas_minus = minus_inputs.reshape(-1, input_dim)
 
-        # Run both batches
-        exp_plus = circuit.run(thetas_plus)    # shape: (2 * B * D, L)
+        exp_plus = circuit.run(thetas_plus)
         exp_minus = circuit.run(thetas_minus)
 
-        # Compute parameter-shift gradient estimates
-        grads = (exp_plus - exp_minus) / (2 * shift)   # shape: (2 * B * D, L)
-
-        # Print the gradients (quantum gradients)
-        # print("Quantum gradients (before reshape):", grads.mean(dim=0))  # Print gradients per logit
-        # print("Quantum gradients shape:", grads.shape)  # Ensure it's the expected shape
-
-        # Reshape back to (B, D, L)
+        # compute parameter shift gradient estimates
+        grads = (exp_plus - exp_minus) / (2 * shift)
         gradients = grads.view(batch_size, input_dim, num_logits)
 
-         # Print gradients after reshaping to check the quantum gradient flow per sample
-        # print("Quantum gradients (after reshape):", gradients.mean(dim=0))  # Average across batch
-
-        # Chain rule contraction with grad_output
+        # chain rule contraction with grad_output
         final_grads = torch.einsum('bij,bj->bi', gradients, grad_output)
 
         return final_grads, None, None
