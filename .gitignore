@@ -67,3 +67,4 @@ ENV/
 
 # Large data files
 *.pkl
+*.pt
