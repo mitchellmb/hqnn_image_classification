@@ -94,17 +94,11 @@ def batch_train_model(x_train, x_test, y_train, y_test,
 
                 # forward
                 y_hat_batch = nn_model(x_batch)
-                
                 train_cost = loss_fxn(y_hat_batch, y_batch) 
 
                 # backward
                 optimizer.zero_grad()
                 train_cost.backward()
-                # for name, param in nn_model.named_parameters():
-                #     if param.grad is not None:
-                #         print(f'{name}: grad mean = {param.grad.abs().mean().item():.6f}')
-                #     else:
-                #         print(f'{name}: grad is None')
 
                 torch.nn.utils.clip_grad_norm_(nn_model.parameters(), gradient_clip_value)
                 optimizer.step()
