@@ -1,4 +1,5 @@
 import numpy as np
+from typing import Literal
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
@@ -27,26 +28,45 @@ class QuantumLayer(nn.Module):
         
 
 class QuantumFunction(Function):
-    def __init__(self, qubit_count: int, hamiltonians: list[cudaq.SpinOperator], features_per_qubit: int):
+    def __init__(self, qubit_count: int, hamiltonians: list[cudaq.SpinOperator], features_per_qubit: Literal[1, 2]):
 
         self.qubit_count = qubit_count
         self.hamiltonian = hamiltonians
         self.features_per_qubit = features_per_qubit
 
-        @cudaq.kernel
-        def kernel(ry_angles: np.ndarray, rx_angles: np.ndarray):
-            qubits = cudaq.qvector(len(ry_angles))
+        if self.features_per_qubit == 2:
+            @cudaq.kernel
+            def kernel(ry_angles: np.ndarray, rx_angles: np.ndarray):
+                qubits = cudaq.qvector(len(ry_angles))
 
-            # angle encoding of previous linear layer's outputs
-            for idx, qubit in enumerate(qubits):
-                ry(ry_angles[idx], qubit)
-                rx(rx_angles[idx], qubit)
+                # angle encoding of previous linear layer's outputs
+                for idx, qubit in enumerate(qubits):
+                    ry(ry_angles[idx], qubit)
+                    rx(rx_angles[idx], qubit)
 
-            # entangle qubits before measuring control-x gate
-            for i in range(1, len(qubits)):
-                x.ctrl(qubits[0], qubits[i])
+                # entangle qubits before measuring control-x gate
+                for i in range(1, len(qubits)):
+                    x.ctrl(qubits[0], qubits[i])
 
-        self.kernel = kernel
+            self.kernel = kernel
+
+        elif self.features_per_qubit == 1:
+            @cudaq.kernel
+            def kernel(ry_angles: np.ndarray):
+                qubits = cudaq.qvector(len(ry_angles))
+
+                # angle encoding of previous linear layer's outputs
+                for idx, qubit in enumerate(qubits):
+                    ry(ry_angles[idx], qubit)
+
+                # entangle qubits before measuring control-x gate
+                for i in range(1, len(qubits)):
+                    x.ctrl(qubits[0], qubits[i])
+
+            self.kernel = kernel
+
+        else:
+            raise ValueError("Quantum kernel requires 1 or 2 features per qubit.")
 
 
     def run(self, theta_vals: torch.tensor) -> torch.tensor:
