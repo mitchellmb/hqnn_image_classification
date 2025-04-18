@@ -58,7 +58,7 @@ def build_and_run_nn(label_target: Literal['categories', 'binary'], cnn_fc_layer
         conv_channels_2 = cnn_fc_layer_args.get('conv_channels_2'),
         fc_neuron_ct_1 = cnn_fc_layer_args.get('fc_neurons_1'),
         fc_neuron_ct_2 = cnn_fc_layer_args.get('fc_neurons_2'),
-        dropout = cnn_fc_layer_args.get('dropout'),
+        dropout = training_params.get('dropout'),
         quantum_layer_args=quantum_layer_args)
     
     # 5 - run the NN 
