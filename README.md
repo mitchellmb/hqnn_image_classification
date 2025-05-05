@@ -7,7 +7,7 @@ Test whether incorporating a quantum layer into a simple convolutional neural ne
 
 ##  Model Architecture
 - **1-2 convolutional layers** followed by pooling (classical)
-- **2-3 fully connected layers** (classical)
+- **3 fully connected layers** (classical)
 - **1 (optional) quantum layer**
 
  <img width="954" alt="hqnn" src="https://github.com/user-attachments/assets/1fbdd611-9b17-449f-8ebe-198b4da157af" />
