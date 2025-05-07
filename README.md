@@ -1,9 +1,15 @@
 # Classical CNN vs. Hybrid-Quantum Neural Network (HQNN) for Plant Leaf Classification
 
-This project explores the integration of quantum computing into a classical deep learning workflow using a **hybrid quantum neural network**. Specifically, it investigates how a quantum layer, implemented with **CUDA-Q by NVIDIA**, affects performance in an image classification task involving plant leave images from a TensorFlow data source. This project expands upon the CUDA-Q HQNN example from NVIDIA at https://nvidia.github.io/cuda-quantum/latest/applications/python/hybrid_quantum_neural_networks.html.
+This project explores the integration of quantum computing into a classical deep learning workflow using a **hybrid quantum neural network**, laying a foundation for multi-class classifications of images with CUDA-Q. Specifically, it investigates how a quantum layer, implemented with **CUDA-Q by NVIDIA**, affects performance in an image classification task involving plant leave images from a TensorFlow data source. This project expands upon the CUDA-Q HQNN example from NVIDIA at https://nvidia.github.io/cuda-quantum/latest/applications/python/hybrid_quantum_neural_networks.html.
 
 ## Objective
 Test whether incorporating a quantum layer into a simple convolutional neural network (CNN) improves or hinders classification accuracy on plant leaf images. The model architecture is deliberately kept simple to ensure the learning from the quantum layer is a key factor in the image classification.
+
+## Summarized results (WIP)
+1) HQNNs can perform as well as classical neural networks, albeit requiring more attention to fine details (both quantum and classical training parameters).
+2) Finding the ideal set of parameters to train the HQNN is likely something that will become easier to do with time as quantum software matures.
+3) A reasonable approach for multi-class classification is to have 2 variational input parameters. Here, they are encoded into the quantum layer as rotations.
+4) A reasonable number of qubits is 1-to-1 with the number of target classes. This makes HQNNs prime systems to explore in the current NISQ era of quantum computing.
 
 ##  Model Architecture
 - **1-2 convolutional layers** followed by pooling (classical)
