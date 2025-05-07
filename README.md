@@ -8,7 +8,7 @@ Test whether incorporating a quantum layer into a simple convolutional neural ne
 ## Summarized results (WIP)
 1) HQNNs can perform as well as classical neural networks, albeit requiring more attention to fine details (both quantum and classical training parameters).
 2) Finding the ideal set of parameters to train the HQNN is likely something that will become easier to do with time as quantum software matures.
-3) A reasonable approach for multi-class classification is to have 2 variational input parameters. Here, they are encoded into the quantum layer as rotations.
+3) A reasonable approach for multi-class classification is to have 2 variational input parameters per class. Here, they are encoded into the quantum layer as rotations, one before applying entangling gates and one in the middle of the gates.
 4) A reasonable number of qubits is 1-to-1 with the number of target classes. This makes HQNNs prime systems to explore in the current NISQ era of quantum computing.
 
 ##  Model Architecture
