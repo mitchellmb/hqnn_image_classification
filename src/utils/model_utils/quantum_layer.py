@@ -13,6 +13,14 @@ DATA_CONFIG = Config.get('data')
 TRAINING_CONFIG = Config.get('training_parameters')
 
 
+def normalize_rotations(x):
+    # Normalizes rotation np.arrays to [-1, 1] range
+    max_val = np.max(np.abs(x))
+    if max_val != 0:
+        x = x / max_val
+    return x
+
+
 class QuantumLayer(nn.Module):
     def __init__(self, qubit_count: int, quantum_layer_args: dict):
         super(QuantumLayer, self).__init__()
@@ -39,14 +47,20 @@ class QuantumFunction(Function):
             def kernel(ry_angles: np.ndarray, rx_angles: np.ndarray):
                 qubits = cudaq.qvector(len(ry_angles))
 
+                h(qubits) # superposition state via Hadamard gate
+
                 # angle encoding of previous linear layer's outputs
                 for idx, qubit in enumerate(qubits):
                     ry(ry_angles[idx], qubit)
-                    rx(rx_angles[idx], qubit)
+               
+               # entanglement CNOT - rotation - CNOT
+                for idx in range(qubit_count - 1):
+                    x.ctrl(qubits[idx], qubits[idx+1])
+                    rx(rx_angles[idx+1], qubits[idx+1])
+                    x.ctrl(qubits[idx], qubits[idx+1])
 
-                # entangle qubits before measuring control-x gate
-                for i in range(1, len(qubits)):
-                    x.ctrl(qubits[0], qubits[i])
+                # final rotation on qubit not included in prior for loop
+                rx(rx_angles[0], qubits[0])
 
             self.kernel = kernel
 
@@ -58,10 +72,6 @@ class QuantumFunction(Function):
                 # angle encoding of previous linear layer's outputs
                 for idx, qubit in enumerate(qubits):
                     ry(ry_angles[idx], qubit)
-
-                # entangle qubits before measuring control-x gate
-                for i in range(1, len(qubits)):
-                    x.ctrl(qubits[0], qubits[i])
 
             self.kernel = kernel
 
@@ -80,6 +90,11 @@ class QuantumFunction(Function):
             for i in theta_vals_np:
                 ry_angles = np.array(i)[::self.features_per_qubit]
                 rx_angles =  np.array(i)[1::self.features_per_qubit]
+
+                # nonlinear encoding, ensuring [1, -1] range for arcsin
+                ry_angles = np.arcsin(normalize_rotations(ry_angles))
+                rx_angles = np.arcsin(normalize_rotations(rx_angles))
+
                 results.append(cudaq.observe(self.kernel, h, ry_angles, rx_angles))
 
             expectation_values.append([results[i].expectation() for i in range(len(results))])

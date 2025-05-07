@@ -74,7 +74,7 @@ class HybridNN(nn.Module):
 
         x = torch.relu(self.fc1(x))
         x = self.dropout(x) 
-        x = torch.relu(self.fc2(x))
+        x = nn.functional.leaky_relu(self.fc2(x), negative_slope=0.1) # allows negative outputs
         x = self.dropout(x)
 
         if self.quantum:
