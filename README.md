@@ -19,7 +19,7 @@ Test whether incorporating a quantum layer into a simple convolutional neural ne
  <img width="954" alt="hqnn" src="https://github.com/user-attachments/assets/1fbdd611-9b17-449f-8ebe-198b4da157af" />
 
 
-Within the quantum layer, the main function that allows for learning is the quantum kernel (QK). The QK is essentially a 'function' that can handle most of the basic Python logic (e.g., if/for/while/else/+/-/*) that acts upon qubits in a quantum circuit (QC). The QK takes in some set of inputs (in this case, angle rotations of qubits) that are passed to the QC. The final measurement/observation is outside of the QK, residing inside of QuantumFunction.run() where expectation values are calculated with input Hamiltonian(s).
+Within the quantum layer, the main function that allows for learning is the quantum kernel (QK). The QK is essentially a 'function' that can handle most of the basic Python logic (e.g., if/for/while/else/+/-/*) that acts upon qubits in a quantum circuit (QC). The QK takes in some set of inputs (in this case, angle rotations of qubits) that are passed to the QC. The final measurement/observation is outside of the QK in this HQNN setup, where expectation values are calculated with input Hamiltonians.
 
 In this project, the QK is being simulated via a traditional CPU/GPU backend, but real quantum computers can be connected too (https://nvidia.github.io/cuda-quantum/latest/using/backends/hardware.html).  
 
